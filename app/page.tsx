@@ -1,55 +1,35 @@
 import { Link } from "@nextui-org/link";
-import { Snippet } from "@nextui-org/snippet";
-import { Code } from "@nextui-org/code";
-import { button as buttonStyles } from "@nextui-org/theme";
-
-import { siteConfig } from "@/config/site";
-import { title, subtitle } from "@/components/primitives";
+import { Card, CardBody } from "@nextui-org/card";
+import { Tooltip } from "@nextui-org/tooltip";
 
 export default function Home() {
-  return (
-    <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-      <div className="inline-block max-w-xl text-center justify-center">
-        <span className={title()}>Make&nbsp;</span>
-        <span className={title({ color: "violet" })}>beautiful&nbsp;</span>
-        <br />
-        <span className={title()}>
-          websites regardless of your design experience.
-        </span>
-        <div className={subtitle({ class: "mt-4" })}>
-          Beautiful, fast and modern React UI library.
+    const tools = [
+        {
+            name: "Blosum",
+            icon: "🌸",
+            description: "Protein sequence alignment scoring matrix",
+            url: "/blosum",
+        },
+        {
+            name: "Global Alignment",
+            icon: "🌍",
+            description: "Align entire sequences end-to-end",
+            url: "/global-alignment",
+        },
+    ];
+
+    return (
+        <div className="grid grid-cols-2 gap-4">
+            {tools.map((tool) => (
+                <Link href={tool.url} className="w-full h-40">
+                    <Card isPressable className="w-full h-full">
+                        <CardBody className="flex flex-col justify-center items-center">
+                            <div className="text-4xl mb-2">{tool.icon}</div>
+                            <div className="text-lg font-bold text-center">{tool.name}</div>
+                        </CardBody>
+                    </Card>
+                </Link>
+            ))}
         </div>
-      </div>
-
-      <div className="flex gap-3">
-        <Link
-          isExternal
-          className={buttonStyles({
-            color: "primary",
-            radius: "full",
-            variant: "shadow",
-          })}
-          href={siteConfig.links.docs}
-        >
-          Documentation
-        </Link>
-        <Link
-          isExternal
-          className={buttonStyles({ variant: "bordered", radius: "full" })}
-          href={siteConfig.links.github}
-        >
-          <GithubIcon size={20} />
-          GitHub
-        </Link>
-      </div>
-
-      <div className="mt-8">
-        <Snippet hideCopyButton hideSymbol variant="bordered">
-          <span>
-            Get started by editing <Code color="primary">app/page.tsx</Code>
-          </span>
-        </Snippet>
-      </div>
-    </section>
-  );
+    );
 }
