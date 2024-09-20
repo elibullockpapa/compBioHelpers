@@ -2,17 +2,24 @@ import { Link } from "@nextui-org/link";
 import { Card, CardBody } from "@nextui-org/card";
 import { Tooltip } from "@nextui-org/tooltip";
 
+type Tool = {
+    name: string;
+    icon: string;
+    description: string;
+    url: string;
+}
+
 export default function Home() {
-    const tools = [
+    const tools: Tool[] = [
         {
             name: "Blosum",
-            icon: "🌸",
+            icon: "🌺",
             description: "Protein sequence alignment scoring matrix",
             url: "/blosum",
         },
         {
             name: "Global Alignment",
-            icon: "🌍",
+            icon: "🧬✟",
             description: "Align entire sequences end-to-end",
             url: "/global-alignment",
         },
