@@ -12,3 +12,7 @@ To create a docker image, run this command in your terminal:
 ```bash
 docker build -t "name of your image" .
 ```
+To run the docker container, run this command in your terminal:
+```bash
+docker run -p "port":3000 "name of your image"
+```
