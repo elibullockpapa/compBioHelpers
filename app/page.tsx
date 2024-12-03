@@ -12,14 +12,14 @@ type Tool = {
 export default function Home() {
     const tools: Tool[] = [
         {
-            name: "Blosum",
+            name: "Blossom",
             icon: "🌺",
             description: "Protein sequence alignment scoring matrix",
             url: "/blosum",
         },
         {
             name: "Global Alignment",
-            icon: "🧬✟",
+            icon: "🧬",
             description: "Align entire sequences end-to-end",
             url: "/global-alignment",
         },

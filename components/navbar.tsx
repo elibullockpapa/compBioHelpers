@@ -13,7 +13,7 @@ export const Navbar = () => {
         <NextUINavbar maxWidth="xl" position="sticky">
             <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
                 <NavbarBrand>
-                    <Link href="/" className="font-bold text-inherit">Comp Bio Helpers</Link>
+                    <Link href="/" className="font-bold text-inherit">🧪 Comp Bio Helpers</Link>
                 </NavbarBrand>
             </NavbarContent>
 
