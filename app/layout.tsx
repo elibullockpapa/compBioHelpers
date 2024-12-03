@@ -3,6 +3,7 @@ import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
+
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 
@@ -33,15 +34,18 @@ export default function RootLayout({
         <html suppressHydrationWarning lang="en">
             <head />
             <body
+                suppressHydrationWarning
                 className={clsx(
                     "min-h-screen bg-background font-sans antialiased",
                     fontSans.variable,
                 )}
             >
-                <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
+                <Providers
+                    themeProps={{ attribute: "class", defaultTheme: "light" }}
+                >
                     <div className="relative flex flex-col h-screen">
                         <Navbar />
-                        <main className="container p-4 flex-grow">
+                        <main className="container mx-auto p-4 flex-grow">
                             {children}
                         </main>
                     </div>
