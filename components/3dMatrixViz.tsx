@@ -11,6 +11,9 @@ interface Matrix3DVizProps {
     matrix: Matrix3D;
     width?: number;
     height?: number;
+    seqX: string;
+    seqY: string;
+    seqZ: string;
 }
 
 // Constants for visualization
@@ -34,6 +37,9 @@ export default function Matrix3DViz({
     matrix,
     width = 800,
     height = 600,
+    seqX,
+    seqY,
+    seqZ,
 }: Matrix3DVizProps) {
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -154,6 +160,57 @@ export default function Matrix3DViz({
         controls.target.set(centerX, centerY, centerZ);
         controls.update(); // Important: must update controls after changing target
 
+        // Add axis labels
+        const addText = (text: string, position: THREE.Vector3) => {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d")!;
+
+            canvas.width = 64;
+            canvas.height = 64;
+
+            context.fillStyle = "#ffffff";
+            context.font = "48px Arial";
+            context.fillText(text, 10, 48);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+
+            sprite.position.copy(position);
+            sprite.scale.set(1.5, 1.5, 1.5);
+            scene.add(sprite);
+
+            return sprite;
+        };
+
+        // Add sequence letters
+        const addSequenceLabels = () => {
+            // X-axis sequence (along width)
+            seqX.split("").forEach((char, i) => {
+                addText(char, new THREE.Vector3(i * CELL_SPACING, -1, -1));
+            });
+
+            // Y-axis sequence (along height)
+            seqY.split("").forEach((char, i) => {
+                addText(
+                    char,
+                    new THREE.Vector3(
+                        -1,
+                        (matrix[0].length - 1 - i) * CELL_SPACING,
+                        -1,
+                    ),
+                );
+            });
+
+            // Z-axis sequence (along depth)
+            seqZ.split("").forEach((char, i) => {
+                addText(char, new THREE.Vector3(-1, -1, i * CELL_SPACING));
+            });
+        };
+
+        // Add sequence labels
+        addSequenceLabels();
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -169,8 +226,15 @@ export default function Matrix3DViz({
                 sphere.geometry.dispose();
                 (sphere.material as THREE.Material).dispose();
             });
+            // Clean up all materials and textures
+            scene.traverse((object) => {
+                if (object instanceof THREE.Sprite) {
+                    (object.material as THREE.SpriteMaterial).map?.dispose();
+                    object.material.dispose();
+                }
+            });
         };
-    }, [matrix, width, height]);
+    }, [matrix, width, height, seqX, seqY, seqZ]);
 
     return <div ref={containerRef} />;
 }

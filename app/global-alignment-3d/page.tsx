@@ -32,7 +32,7 @@ export type Cell = {
 export default function GlobalAlignment() {
     const [seqX, setSeqX] = useState("AATTCCGG");
     const [seqY, setSeqY] = useState("AATTCCGG");
-    const [seqZ, setSeqZ] = useState("");
+    const [seqZ, setSeqZ] = useState("ATC");
     const [matchScore, setMatchScore] = useState(1);
     const [mismatchScore, setMismatchScore] = useState(-1);
     const [gapScore, setGapScore] = useState(-2);
@@ -412,7 +412,14 @@ export default function GlobalAlignment() {
 
             {/* Add 3D visualization above the 2D table */}
             {seqX.length > 0 && seqY.length > 0 && (
-                <Matrix3DViz matrix={dpTable} />
+                <Matrix3DViz
+                    height={600}
+                    matrix={dpTable}
+                    seqX={seqX}
+                    seqY={seqY}
+                    seqZ={seqZ}
+                    width={800}
+                />
             )}
 
             {/* Add alignment table */}
