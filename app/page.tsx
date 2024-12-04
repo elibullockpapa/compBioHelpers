@@ -22,6 +22,12 @@ export default function Home() {
             description: "Align entire sequences end-to-end",
             url: "/global-alignment-2d",
         },
+        {
+            name: "Global Alignment 3D",
+            icon: "🧊",
+            description: "Align three sequences end-to-end",
+            url: "/global-alignment-3d",
+        },
     ];
 
     return (

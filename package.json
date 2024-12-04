@@ -23,6 +23,9 @@
 		"@nextui-org/theme": "2.2.11",
 		"@react-aria/ssr": "3.9.4",
 		"@react-aria/visually-hidden": "3.8.12",
+		"@react-three/drei": "^9.119.0",
+		"@react-three/fiber": "^8.17.10",
+		"@types/three": "^0.170.0",
 		"clsx": "2.1.1",
 		"framer-motion": "~11.1.1",
 		"intl-messageformat": "^10.5.0",
@@ -30,7 +33,8 @@
 		"next": "^14.2.12",
 		"next-themes": "^0.2.1",
 		"react": "18.3.1",
-		"react-dom": "18.3.1"
+		"react-dom": "18.3.1",
+		"three": "^0.171.0"
 	},
 	"devDependencies": {
 		"@types/node": "20.5.7",
