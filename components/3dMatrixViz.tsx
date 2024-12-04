@@ -86,8 +86,12 @@ export default function Matrix3DViz({
         }
         const camera = cameraRef.current;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true, // Enable transparency
+        });
 
+        renderer.setClearColor(0x000000, 0); // Set background to transparent
         renderer.setSize(width, height);
         containerRef.current.appendChild(renderer.domElement);
 
@@ -192,7 +196,7 @@ export default function Matrix3DViz({
             canvas.width = 64;
             canvas.height = 64;
 
-            context.fillStyle = "#ffffff";
+            context.fillStyle = "#888888";
             context.font = "48px Arial";
             context.fillText(text, 10, 48);
 
