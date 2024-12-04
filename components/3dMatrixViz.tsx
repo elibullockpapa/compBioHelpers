@@ -42,27 +42,72 @@ export default function Matrix3DViz({
     seqZ,
 }: Matrix3DVizProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const cameraPositionRef = useRef<THREE.Vector3 | null>(null);
+    const controlsTargetRef = useRef<THREE.Vector3 | null>(null);
 
     useEffect(() => {
         if (!containerRef.current) return;
 
         // Setup scene
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            width / height,
-            0.1,
-            1000,
-        );
+
+        // Create or reuse camera
+        if (!cameraRef.current) {
+            cameraRef.current = new THREE.PerspectiveCamera(
+                50,
+                width / height,
+                0.1,
+                1000,
+            );
+            // Set initial camera position
+            const maxX = matrix[0][0].length - 1;
+            const maxY = matrix[0].length - 1;
+            const maxZ = matrix.length - 1;
+
+            const centerX = (maxX * CELL_SPACING) / 2;
+            const centerY = (maxY * CELL_SPACING) / 2;
+            const centerZ = (maxZ * CELL_SPACING) / 2;
+
+            cameraRef.current.position.set(
+                centerX,
+                centerY,
+                maxZ * CELL_SPACING + 20,
+            );
+            cameraPositionRef.current = cameraRef.current.position.clone();
+            controlsTargetRef.current = new THREE.Vector3(
+                centerX,
+                centerY,
+                centerZ,
+            );
+        } else if (cameraPositionRef.current) {
+            // Restore camera position
+            cameraRef.current.position.copy(cameraPositionRef.current);
+        }
+        const camera = cameraRef.current;
+
         const renderer = new THREE.WebGLRenderer({ antialias: true });
 
         renderer.setSize(width, height);
         containerRef.current.appendChild(renderer.domElement);
 
-        // Add controls
+        // Always create new controls but restore previous state
         const controls = new OrbitControls(camera, renderer.domElement);
 
         controls.enableDamping = true;
+        if (controlsTargetRef.current) {
+            controls.target.copy(controlsTargetRef.current);
+        }
+        controls.update();
+
+        // Store controls state before cleanup
+        const saveControlsState = () => {
+            cameraPositionRef.current = camera.position.clone();
+            controlsTargetRef.current = controls.target.clone();
+        };
+
+        // Add event listener to save state when user interacts
+        controls.addEventListener("change", saveControlsState);
 
         // Add lighting
         const ambientLight = new THREE.AmbientLight(
@@ -139,27 +184,6 @@ export default function Matrix3DViz({
             });
         });
 
-        // Position camera to look at center of matrix
-        const maxX = matrix[0][0].length - 1;
-        const maxY = matrix[0].length - 1;
-        const maxZ = matrix.length - 1;
-
-        // Calculate center point of matrix
-        const centerX = (maxX * CELL_SPACING) / 2;
-        const centerY = (maxY * CELL_SPACING) / 2;
-        const centerZ = (maxZ * CELL_SPACING) / 2;
-
-        // Set camera position and controls target
-        camera.position.set(
-            centerX,
-            centerY,
-            maxZ * CELL_SPACING + 13, // Position camera behind matrix
-        );
-
-        // Set the orbit controls target to the center of the matrix
-        controls.target.set(centerX, centerY, centerZ);
-        controls.update(); // Important: must update controls after changing target
-
         // Add axis labels
         const addText = (text: string, position: THREE.Vector3) => {
             const canvas = document.createElement("canvas");
@@ -177,7 +201,7 @@ export default function Matrix3DViz({
             const sprite = new THREE.Sprite(material);
 
             sprite.position.copy(position);
-            sprite.scale.set(1.5, 1.5, 1.5);
+            sprite.scale.set(1.2, 1.2, 1.2);
             scene.add(sprite);
 
             return sprite;
@@ -221,6 +245,8 @@ export default function Matrix3DViz({
 
         // Cleanup
         return () => {
+            controls.removeEventListener("change", saveControlsState);
+            controls.dispose();
             containerRef.current?.removeChild(renderer.domElement);
             spheres.forEach((sphere) => {
                 sphere.geometry.dispose();
