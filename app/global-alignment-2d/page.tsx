@@ -67,14 +67,16 @@ export default function GlobalAlignment() {
                 const left = table[row][column - 1].score;
                 const up = table[row - 1][column].score;
 
-                // Calculate scores
+                // Get score for moving diagonally
                 const diagonalScore =
                     seqX[column - 1] === seqY[row - 1]
                         ? upAndLeft + matchScore
                         : upAndLeft + mismatchScore;
+
+                // Get score for moving down
                 const downScore = up + gapScore;
 
-                // get score for moving right
+                // Get score for moving right
                 const rightScore = left + gapScore;
 
                 // Find best score and corresponding direction
@@ -98,37 +100,53 @@ export default function GlobalAlignment() {
     };
 
     // Function to do the backtrace and get the best alignment
-    function findBestAlignment(table: Cell[][]): Cell[][] {
-        // Start at solution of the dp table, and work backwards
+    function findBestAlignment(table: Cell[][]): {
+        table: Cell[][];
+        alignedSeqs: { x: string; y: string };
+    } {
         let seqXIndex = seqX.length;
         let seqYIndex = seqY.length;
 
-        // Backtrace until we reach the beginning
+        // Arrays to store the aligned sequences
+        let alignedX: string[] = [];
+        let alignedY: string[] = [];
+
         while (seqXIndex !== 0 || seqYIndex !== 0) {
-            // Mark the cell as in alignment
             table[seqYIndex][seqXIndex] = {
                 ...table[seqYIndex][seqXIndex],
                 inAlignment: true,
             };
 
-            // Move in the direction of the best score
-            if (table[seqYIndex][seqXIndex].direction == "diagonal") {
+            const direction = table[seqYIndex][seqXIndex].direction;
+
+            if (direction === "diagonal") {
+                alignedX.unshift(seqX[seqXIndex - 1]);
+                alignedY.unshift(seqY[seqYIndex - 1]);
                 seqXIndex--;
                 seqYIndex--;
-            } else if (table[seqYIndex][seqXIndex].direction == "up") {
+            } else if (direction === "up") {
+                alignedX.unshift("-");
+                alignedY.unshift(seqY[seqYIndex - 1]);
                 seqYIndex--;
-            } else if (table[seqYIndex][seqXIndex].direction == "left") {
+            } else if (direction === "left") {
+                alignedX.unshift(seqX[seqXIndex - 1]);
+                alignedY.unshift("-");
                 seqXIndex--;
             }
         }
 
-        // Mark 0,0 as in alignment
         table[0][0] = {
             ...table[0][0],
             inAlignment: true,
         };
 
-        return table;
+        return {
+            table,
+            alignedSeqs: {
+                x: alignedX.join(""),
+                y: alignedY.join(""),
+            },
+        };
     }
 
     // Create columns array
@@ -142,7 +160,7 @@ export default function GlobalAlignment() {
     ];
 
     // Create rows array
-    const dpTable = findBestAlignment(createDPTable());
+    const { table: dpTable, alignedSeqs } = findBestAlignment(createDPTable());
     const rows = ["-", ...seqY.split("")].map((char, i) => ({
         key: `row-${i}`,
         side: char,
@@ -163,6 +181,32 @@ export default function GlobalAlignment() {
                 {},
             ),
     }));
+
+    // Create columns and rows for the alignment table
+    const alignmentColumns = [
+        { key: "sequence", label: "Sequence" },
+        ...Array.from({ length: alignedSeqs.x.length }, (_, i) => ({
+            key: `pos${i}`,
+            label: (i + 1).toString(),
+        })),
+    ];
+
+    const alignmentRows = [
+        {
+            key: "x",
+            sequence: "X",
+            ...Object.fromEntries(
+                alignedSeqs.x.split("").map((char, i) => [`pos${i}`, char]),
+            ),
+        },
+        {
+            key: "y",
+            sequence: "Y",
+            ...Object.fromEntries(
+                alignedSeqs.y.split("").map((char, i) => [`pos${i}`, char]),
+            ),
+        },
+    ];
 
     return (
         <div className="flex flex-col gap-4">
@@ -215,6 +259,7 @@ export default function GlobalAlignment() {
             </div>
 
             {/* Show DP Table when sequences have lengths above 0*/}
+            <div className="text-lg font-medium">DP Table</div>
             {seqX.length > 0 && seqY.length > 0 ? (
                 <Table aria-label="Global alignment table">
                     <TableHeader columns={columns}>
@@ -255,6 +300,31 @@ export default function GlobalAlignment() {
                         </p>
                     </CardFooter>
                 </Card>
+            )}
+
+            {/* Add alignment table */}
+            <div className="text-lg font-medium">Alignment Table</div>
+            {seqX.length > 0 && seqY.length > 0 && (
+                <Table aria-label="Sequence alignment table">
+                    <TableHeader columns={alignmentColumns}>
+                        {(column) => (
+                            <TableColumn key={column.key}>
+                                {column.label}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody items={alignmentRows}>
+                        {(item) => (
+                            <TableRow key={item.key}>
+                                {(columnKey) => (
+                                    <TableCell>
+                                        {getKeyValue(item, columnKey)}
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             )}
         </div>
     );
