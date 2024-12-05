@@ -1,10 +1,8 @@
 name: Mirror Repository
 
 on:
-  repository_dispatch:
-    types: [trigger-mirror]
-  workflow_dispatch:
-
+    push:  # Trigger on any push to the original repo
+  
 jobs:
   mirror:
     runs-on: ubuntu-latest
