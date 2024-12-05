@@ -231,7 +231,7 @@ export default function GlobalAlignment() {
         return table;
     };
 
-    // Modify the findBestAlignment function to return both the table and aligned sequences
+    // Find best alignment and return both the table and aligned sequences
     function findBestAlignment(table: Cell[][][]): {
         table: Cell[][][];
         alignedSeqs: { x: string; y: string; z: string };
