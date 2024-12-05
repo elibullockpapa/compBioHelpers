@@ -11,7 +11,7 @@ type Tool = {
 export default function Home() {
     const tools: Tool[] = [
         {
-            name: "Blossom",
+            name: "BLOSUM",
             icon: "🌺",
             description: "Protein sequence alignment scoring matrix",
             url: "/blosum",
