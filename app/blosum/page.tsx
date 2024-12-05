@@ -229,6 +229,7 @@ const QValuesComponent: React.FC<QValuesComponentProps> = ({
             (sum, block) => sum + block.flat().length,
             0,
         );
+        console.log(totalCells);
         const letterCounts: { [key: string]: number } = {};
 
         // Count occurrences of each letter
@@ -293,40 +294,68 @@ function PValuesMatrixTab({
 }) {
     const calculatePValues = () => {
         const vocabSize = qValues.length;
-        const pValues: number[][] = Array(vocabSize)
-            .fill(0)
-            .map(() => Array(vocabSize).fill(0));
+        const pValues: number[][] = Array.from({ length: vocabSize }, () =>
+            Array(vocabSize).fill(0),
+        );
         const letterToIndex: { [key: string]: number } = {};
 
-        qValues.forEach(({ letter }, index) => (letterToIndex[letter] = index));
+        qValues.forEach(({ letter }, index) => {
+            letterToIndex[letter] = index;
+        });
 
         let totalPairs = 0;
 
-        // Count observed pairs and calculate total possible pairs
+        // Iterate over each block
         blocks.forEach((block) => {
-            block.forEach((column) => {
-                const columnLength = column.length;
-                const pairsInColumn = columnLength * (columnLength - 1);
+            const numSequences = block.length;
+            const numPositions = block[0].length;
 
+            // Iterate over each position (column)
+            for (let pos = 0; pos < numPositions; pos++) {
+                const columnLetters: string[] = [];
+                for (let seqIndex = 0; seqIndex < numSequences; seqIndex++) {
+                    const letter = block[seqIndex][pos];
+                    columnLetters.push(letter);
+                }
+
+                const columnLength = columnLetters.length;
+                // Calculate total possible pairs in the column
+                const pairsInColumn = (columnLength * (columnLength - 1)) / 2;
                 totalPairs += pairsInColumn;
 
-                for (let i = 0; i < columnLength; i++) {
-                    for (let j = i + 1; j < columnLength; j++) {
-                        const index1 = letterToIndex[column[i]];
-                        const index2 = letterToIndex[column[j]];
+                // Count occurrences of each letter in the column
+                const letterCounts: { [key: string]: number } = {};
+                columnLetters.forEach((letter) => {
+                    letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+                });
 
-                        if (index1 === index2) {
-                            pValues[index1][index2] += 1;
-                        } else {
-                            pValues[index1][index2] += 1;
-                            pValues[index2][index1] += 1;
-                        }
+                // Calculate pairs for each combination of letters
+                const letters = Object.keys(letterCounts);
+
+                for (let i = 0; i < letters.length; i++) {
+                    const letterX = letters[i];
+                    const countX = letterCounts[letterX];
+                    const indexX = letterToIndex[letterX];
+
+                    // Pairs where x = y
+                    const pairsXX = (countX * (countX - 1)) / 2;
+                    pValues[indexX][indexX] += pairsXX;
+
+                    for (let j = i + 1; j < letters.length; j++) {
+                        const letterY = letters[j];
+                        const countY = letterCounts[letterY];
+                        const indexY = letterToIndex[letterY];
+
+                        // Pairs where x ≠ y
+                        const pairsXY = countX * countY;
+                        pValues[indexX][indexY] += pairsXY;
+                        pValues[indexY][indexX] += pairsXY; // Ensure symmetry
                     }
                 }
-            });
+            }
         });
 
-        // Calculate probabilities
+        // Normalize counts to probabilities
         for (let i = 0; i < vocabSize; i++) {
             for (let j = 0; j < vocabSize; j++) {
                 pValues[i][j] /= totalPairs;
