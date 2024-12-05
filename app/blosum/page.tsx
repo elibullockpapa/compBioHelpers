@@ -303,13 +303,16 @@ function PValuesMatrixTab({
         setPValues(pVals);
     }, [blocks, qValues]);
 
-    const calculatePValues = () => {
+    const calculatePValues = (): number[][] => {
         const vocabSize = qValues.length;
+
+        // Initialize pValues matrix with zeros
         const pValues: number[][] = Array.from({ length: vocabSize }, () =>
             Array(vocabSize).fill(0),
         );
-        const letterToIndex: { [key: string]: number } = {};
 
+        // Create a mapping from letter to its index
+        const letterToIndex: { [key: string]: number } = {};
         qValues.forEach(({ letter }, index) => {
             letterToIndex[letter] = index;
         });
@@ -324,49 +327,57 @@ function PValuesMatrixTab({
             // Iterate over each position (column)
             for (let pos = 0; pos < numPositions; pos++) {
                 const columnLetters: string[] = [];
+
+                // Collect letters in the current column
                 for (let seqIndex = 0; seqIndex < numSequences; seqIndex++) {
                     const letter = block[seqIndex][pos];
-                    columnLetters.push(letter);
+                    if (letterToIndex.hasOwnProperty(letter)) {
+                        columnLetters.push(letter);
+                    }
                 }
 
                 const columnLength = columnLetters.length;
+
+                // Skip columns with less than 2 letters
+                if (columnLength < 2) continue;
+
                 // Calculate total possible pairs in the column
                 const pairsInColumn = (columnLength * (columnLength - 1)) / 2;
                 totalPairs += pairsInColumn;
 
                 // Count occurrences of each letter in the column
-                const letterCounts: { [key: string]: number } = {};
+                const letterCounts: number[] = Array(vocabSize).fill(0);
                 columnLetters.forEach((letter) => {
-                    letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+                    const index = letterToIndex[letter];
+                    letterCounts[index]++;
                 });
 
-                // Calculate pairs for each combination of letters
-                const letters = Object.keys(letterCounts);
-
-                for (let i = 0; i < letters.length; i++) {
-                    const letterX = letters[i];
-                    const countX = letterCounts[letterX];
-                    const indexX = letterToIndex[letterX];
+                // Calculate pair counts
+                for (let i = 0; i < vocabSize; i++) {
+                    const countX = letterCounts[i];
+                    if (countX < 1) continue;
 
                     // Pairs where x = y
-                    const pairsXX = (countX * (countX - 1)) / 2;
-                    pValues[indexX][indexX] += pairsXX;
+                    pValues[i][i] += (countX * (countX - 1)) / 2;
 
-                    for (let j = i + 1; j < letters.length; j++) {
-                        const letterY = letters[j];
-                        const countY = letterCounts[letterY];
-                        const indexY = letterToIndex[letterY];
+                    // Pairs where x != y
+                    for (let j = i + 1; j < vocabSize; j++) {
+                        const countY = letterCounts[j];
+                        if (countY < 1) continue;
 
-                        // Pairs where x ≠ y
                         const pairsXY = countX * countY;
-                        pValues[indexX][indexY] += pairsXY;
-                        pValues[indexY][indexX] += pairsXY; // Ensure symmetry
+                        pValues[i][j] += pairsXY;
+                        pValues[j][i] += pairsXY;
                     }
                 }
             }
         });
 
         // Normalize counts to probabilities
+        if (totalPairs === 0) {
+            return pValues;
+        }
+
         for (let i = 0; i < vocabSize; i++) {
             for (let j = 0; j < vocabSize; j++) {
                 pValues[i][j] /= totalPairs;
@@ -550,21 +561,13 @@ function BlosumTableTab({
                                         const colIndex = qValues.findIndex(
                                             (q) => q.letter === colLetter,
                                         );
-                                        if (colIndex <= rowIndex) {
-                                            const score =
-                                                blosumScores[rowIndex][colIndex];
-                                            return (
-                                                <TableCell key={columnKey}>
-                                                    {score.toFixed(2)}
-                                                </TableCell>
-                                            );
-                                        } else {
-                                            return (
-                                                <TableCell key={columnKey}>
-                                                    {/* Empty cell */}
-                                                </TableCell>
-                                            );
-                                        }
+                                        const score =
+                                            blosumScores[rowIndex][colIndex];
+                                        return (
+                                            <TableCell key={columnKey}>
+                                                {score.toFixed(2)}
+                                            </TableCell>
+                                        );
                                     }
                                 })}
                             </TableRow>
