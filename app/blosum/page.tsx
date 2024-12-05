@@ -229,7 +229,6 @@ const QValuesComponent: React.FC<QValuesComponentProps> = ({
             (sum, block) => sum + block.flat().length,
             0,
         );
-        console.log(totalCells);
         const letterCounts: { [key: string]: number } = {};
 
         // Count occurrences of each letter
