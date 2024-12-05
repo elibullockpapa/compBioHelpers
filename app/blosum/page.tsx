@@ -1,6 +1,6 @@
 // app/blosum/page.tsx
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
     Button,
     getKeyValue,
@@ -11,6 +11,7 @@ import {
     TableHeader,
     TableRow,
     Textarea,
+    Input,
 } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/react";
 
@@ -54,13 +55,17 @@ export default function Blosum() {
             </Tab>
             <Tab key="pvaluesmatrix" title="P values matrix">
                 {qValues.length > 0 && (
-                    <PValuesMatrixTab blocks={blocks} qValues={qValues} />
+                    <PValuesMatrixTab
+                        blocks={blocks}
+                        qValues={qValues}
+                        setPValues={setPValuesMatrix}
+                    />
                 )}
             </Tab>
             <Tab key="blosumtable" title="BLOSUM Table">
-                <div>
-                    <p>BLOSUM table calculation will be implemented here.</p>
-                </div>
+                {qValues.length > 0 && pValuesMatrix.length > 0 && (
+                    <BlosumTableTab qValues={qValues} pValues={pValuesMatrix} />
+                )}
             </Tab>
         </Tabs>
     );
@@ -287,10 +292,17 @@ const QValuesComponent: React.FC<QValuesComponentProps> = ({
 function PValuesMatrixTab({
     blocks,
     qValues,
+    setPValues,
 }: {
     blocks: string[][][];
     qValues: { letter: string; qValue: number }[];
+    setPValues: (pValues: number[][]) => void;
 }) {
+    useEffect(() => {
+        const pVals = calculatePValues();
+        setPValues(pVals);
+    }, [blocks, qValues]);
+
     const calculatePValues = () => {
         const vocabSize = qValues.length;
         const pValues: number[][] = Array.from({ length: vocabSize }, () =>
@@ -435,3 +447,132 @@ function PValuesMatrixTab({
         </div>
     );
 }
+
+// BLOSUM Table Tab Component
+function BlosumTableTab({
+    qValues,
+    pValues,
+}: {
+    qValues: { letter: string; qValue: number }[];
+    pValues: number[][];
+}) {
+    const [lambdaInput, setLambdaInput] = useState<string>("1");
+    const [blosumScores, setBlosumScores] = useState<number[][] | null>(null);
+
+    // Function to calculate BLOSUM scores
+    const calculateBlosumScores = (lambdaValue: number) => {
+        const vocabSize = qValues.length;
+        const scores: number[][] = Array.from({ length: vocabSize }, () =>
+            Array(vocabSize).fill(0),
+        );
+
+        for (let i = 0; i < vocabSize; i++) {
+            const qx = qValues[i].qValue;
+            for (let j = 0; j <= i; j++) {
+                const qy = qValues[j].qValue;
+                const pxy = pValues[i][j];
+
+                if (qx > 0 && qy > 0 && pxy > 0 && lambdaValue > 0) {
+                    // Use natural logarithm instead of log base 2
+                    const score =
+                        (1 / lambdaValue) * Math.log(pxy / (qx * qy));
+                    scores[i][j] = score;
+                    scores[j][i] = score; // Ensure symmetry
+                } else {
+                    scores[i][j] = 0;
+                    scores[j][i] = 0;
+                }
+            }
+        }
+
+        setBlosumScores(scores);
+    };
+
+    // Create columns array
+    const columns = [
+        { key: "letter", label: "Letter" },
+        ...qValues.map(({ letter }) => ({
+            key: `col-${letter}`,
+            label: letter,
+        })),
+    ];
+
+    return (
+        <div className="mt-4">
+            <h2 className="text-xl font-bold mb-2">BLOSUM Table</h2>
+            <div className="mb-4 flex items-end space-x-4">
+                <Input
+                    type="number"
+                    label="Lambda Value"
+                    value={lambdaInput}
+                    onChange={(e) => setLambdaInput(e.target.value)}
+                />
+                <Button
+                    onPress={() => {
+                        const lambdaValue = parseFloat(lambdaInput);
+                        if (!isNaN(lambdaValue) && lambdaValue > 0) {
+                            calculateBlosumScores(lambdaValue);
+                        } else {
+                            alert(
+                                "Please enter a valid positive number for lambda.",
+                            );
+                        }
+                    }}
+                >
+                    Calculate
+                </Button>
+            </div>
+            {blosumScores && (
+                <Table aria-label="BLOSUM Table">
+                    <TableHeader columns={columns}>
+                        {(column) => (
+                            <TableColumn key={column.key}>
+                                {column.label}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody>
+                        {qValues.map(({ letter: rowLetter }, rowIndex) => (
+                            <TableRow key={`row-${rowLetter}`}>
+                                {columns.map((column) => {
+                                    const columnKey = column.key;
+                                    if (columnKey === "letter") {
+                                        return (
+                                            <TableCell key={columnKey}>
+                                                {rowLetter}
+                                            </TableCell>
+                                        );
+                                    } else {
+                                        const colLetter = columnKey.replace(
+                                            "col-",
+                                            "",
+                                        );
+                                        const colIndex = qValues.findIndex(
+                                            (q) => q.letter === colLetter,
+                                        );
+                                        if (colIndex <= rowIndex) {
+                                            const score =
+                                                blosumScores[rowIndex][colIndex];
+                                            return (
+                                                <TableCell key={columnKey}>
+                                                    {score.toFixed(2)}
+                                                </TableCell>
+                                            );
+                                        } else {
+                                            return (
+                                                <TableCell key={columnKey}>
+                                                    {/* Empty cell */}
+                                                </TableCell>
+                                            );
+                                        }
+                                    }
+                                })}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </div>
+    );
+}
+
