@@ -479,12 +479,12 @@ function BlosumTableTab({
 
         for (let i = 0; i < vocabSize; i++) {
             const qx = qValues[i].qValue;
-            for (let j = 0; j <= i; j++) {
+            for (let j = 0; j <= i; j++) { // Note: j <= i for lower triangle
                 const qy = qValues[j].qValue;
                 const pxy = pValues[i][j];
 
                 if (qx > 0 && qy > 0 && pxy > 0 && lambdaValue > 0) {
-                    // Use natural logarithm instead of log base 2
+                    // Use natural logarithm
                     const score =
                         (1 / lambdaValue) * Math.log(pxy / (qx * qy));
                     scores[i][j] = score;
@@ -502,7 +502,7 @@ function BlosumTableTab({
     // Create columns array
     const columns = [
         { key: "letter", label: "Letter" },
-        ...qValues.map(({ letter }) => ({
+        ...qValues.map(({ letter }, index) => ({
             key: `col-${letter}`,
             label: letter,
         })),
@@ -545,7 +545,7 @@ function BlosumTableTab({
                     <TableBody>
                         {qValues.map(({ letter: rowLetter }, rowIndex) => (
                             <TableRow key={`row-${rowLetter}`}>
-                                {columns.map((column) => {
+                                {columns.map((column, colIndex) => {
                                     const columnKey = column.key;
                                     if (columnKey === "letter") {
                                         return (
@@ -554,20 +554,31 @@ function BlosumTableTab({
                                             </TableCell>
                                         );
                                     } else {
+                                        // Extract column index from key
                                         const colLetter = columnKey.replace(
                                             "col-",
                                             "",
                                         );
-                                        const colIndex = qValues.findIndex(
+                                        const colIndexActual = qValues.findIndex(
                                             (q) => q.letter === colLetter,
                                         );
-                                        const score =
-                                            blosumScores[rowIndex][colIndex];
-                                        return (
-                                            <TableCell key={columnKey}>
-                                                {score.toFixed(2)}
-                                            </TableCell>
-                                        );
+
+                                        // Only display lower triangle
+                                        if (colIndexActual <= rowIndex) {
+                                            const score =
+                                                blosumScores[rowIndex][colIndexActual];
+                                            return (
+                                                <TableCell key={columnKey}>
+                                                    {score.toFixed(2)}
+                                                </TableCell>
+                                            );
+                                        } else {
+                                            return (
+                                                <TableCell key={columnKey}>
+                                                    {/* Empty cell */}
+                                                </TableCell>
+                                            );
+                                        }
                                     }
                                 })}
                             </TableRow>
