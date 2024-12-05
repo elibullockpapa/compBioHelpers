@@ -376,18 +376,20 @@ function PValuesMatrixTab({
         })),
     ];
 
-    // Create rows array
-    const rows = qValues.map(({ letter: rowLetter }, rowIndex) => ({
-        key: `row-${rowLetter}`,
-        letter: rowLetter,
-        ...qValues.reduce(
-            (acc, { letter: colLetter }, colIndex) => ({
-                ...acc,
-                [`col-${colLetter}`]: pValues[rowIndex][colIndex].toFixed(4),
-            }),
-            {},
-        ),
-    }));
+    // Create rows array with only lower triangle values
+    const rows = qValues.map(({ letter: rowLetter }, rowIndex) => {
+        const row: any = { key: `row-${rowLetter}`, letter: rowLetter };
+
+        qValues.forEach(({ letter: colLetter }, colIndex) => {
+            if (colIndex <= rowIndex) {
+                row[`col-${colLetter}`] = pValues[rowIndex][colIndex].toFixed(4);
+            } else {
+                row[`col-${colLetter}`] = ""; // Empty cell for upper triangle
+            }
+        });
+
+        return row;
+    });
 
     return (
         <div className="mt-4">
@@ -403,11 +405,30 @@ function PValuesMatrixTab({
                 <TableBody items={rows}>
                     {(item) => (
                         <TableRow key={item.key}>
-                            {(columnKey) => (
-                                <TableCell>
-                                    {getKeyValue(item, columnKey)}
-                                </TableCell>
-                            )}
+                            {(columnKey) => {
+                                if (columnKey === "letter") {
+                                    // Always render the letter column
+                                    return <TableCell>{item[columnKey]}</TableCell>;
+                                } else {
+                                    const colLetter = (columnKey as string).replace("col-", "");
+                                    const colIndex = qValues.findIndex(
+                                        (q) => q.letter === colLetter
+                                    );
+                                    const rowIndex = qValues.findIndex(
+                                        (q) => q.letter === item.letter
+                                    );
+
+                                    if (colIndex <= rowIndex) {
+                                        // Render cell for lower triangle
+                                        return (
+                                            <TableCell>{item[columnKey]}</TableCell>
+                                        );
+                                    } else {
+                                        // Render empty cell for upper triangle
+                                        return <TableCell>&nbsp;</TableCell>;
+                                    }
+                                }
+                            }}
                         </TableRow>
                     )}
                 </TableBody>
