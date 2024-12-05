@@ -167,61 +167,72 @@ export default function GlobalAlignment() {
         }
 
         // Fill the 3D space
-        for (let k = 1; k <= seqZ.length; k++) {
-            for (let j = 1; j <= seqY.length; j++) {
-                for (let i = 1; i <= seqX.length; i++) {
+        for (let z = 1; z <= seqZ.length; z++) {
+            for (let y = 1; y <= seqY.length; y++) {
+                for (let x = 1; x <= seqX.length; x++) {
                     const scores = [
-                        // Diagonal in all 3 dimensions
+                        // Single axis movements (x, y, z)
                         {
                             score:
-                                table[k - 1][j - 1][i - 1].score +
-                                (seqX[i - 1] === seqY[j - 1] &&
-                                seqY[j - 1] === seqZ[k - 1]
-                                    ? matchScore
-                                    : mismatchScore),
-                            direction: "xyz" as Direction,
-                        },
-                        // Plane movements
-                        {
-                            score:
-                                table[k - 1][j - 1][i].score +
-                                (seqY[j - 1] === seqZ[k - 1]
-                                    ? matchScore
-                                    : mismatchScore),
-                            direction: "yz" as Direction,
+                                table[z][y][x - 1].score + gapScore + gapScore,
+                            direction: "x" as Direction,
                         },
                         {
                             score:
-                                table[k - 1][j][i - 1].score +
-                                (seqX[i - 1] === seqZ[k - 1]
+                                table[z][y - 1][x].score + gapScore + gapScore,
+                            direction: "y" as Direction,
+                        },
+                        {
+                            score:
+                                table[z - 1][y][x].score + gapScore + gapScore,
+                            direction: "z" as Direction,
+                        },
+                        // Plane movements (xy, xz, yz)
+                        {
+                            score:
+                                table[z][y - 1][x - 1].score +
+                                (seqX[x - 1] === seqY[y - 1]
                                     ? matchScore
-                                    : mismatchScore),
+                                    : mismatchScore) +
+                                gapScore,
+                            direction: "xy" as Direction,
+                        },
+                        {
+                            score:
+                                table[z - 1][y][x - 1].score +
+                                (seqX[x - 1] === seqZ[z - 1]
+                                    ? matchScore
+                                    : mismatchScore) +
+                                gapScore,
                             direction: "xz" as Direction,
                         },
                         {
                             score:
-                                table[k][j - 1][i - 1].score +
-                                (seqX[i - 1] === seqY[j - 1]
+                                table[z - 1][y - 1][x].score +
+                                (seqY[y - 1] === seqZ[z - 1]
+                                    ? matchScore
+                                    : mismatchScore) +
+                                gapScore,
+                            direction: "yz" as Direction,
+                        },
+                        // Back diagonal (xyz)
+                        {
+                            score:
+                                table[z - 1][y - 1][x - 1].score +
+                                (seqX[x - 1] === seqY[y - 1]
+                                    ? matchScore
+                                    : mismatchScore) +
+                                (seqY[y - 1] === seqZ[z - 1]
+                                    ? matchScore
+                                    : mismatchScore) +
+                                (seqX[x - 1] === seqZ[z - 1]
                                     ? matchScore
                                     : mismatchScore),
-                            direction: "xy" as Direction,
-                        },
-                        // Single axis movements
-                        {
-                            score: table[k - 1][j][i].score + gapScore,
-                            direction: "z" as Direction,
-                        },
-                        {
-                            score: table[k][j - 1][i].score + gapScore,
-                            direction: "y" as Direction,
-                        },
-                        {
-                            score: table[k][j][i - 1].score + gapScore,
-                            direction: "x" as Direction,
+                            direction: "xyz" as Direction,
                         },
                     ];
 
-                    table[k][j][i] = scores.reduce((a, b) =>
+                    table[z][y][x] = scores.reduce((a, b) =>
                         a.score > b.score ? a : b,
                     );
                 }
