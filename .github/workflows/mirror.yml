@@ -1,0 +1,43 @@
+name: Mirror Repository
+
+on:
+  repository_dispatch:
+    types: [trigger-mirror]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout original repository
+      - name: Checkout original repository
+        run: |
+          git clone https://$GITHUB_ACTOR:${{ secrets.GH_PAT }}@github.com/elibullockpapa/compBioHelpers.git
+          cd compBioHelpers
+          git remote add mirror https://$GITHUB_ACTOR:${{ secrets.GH_PAT }}@github.com/shared-hackathon/compBioHelpersMirror.git
+
+      # Step 2: Install git filter-repo
+      - name: Install git filter-repo
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-pip -y
+          pip3 install git-filter-repo
+
+      # Step 3: Rewrite commit history with git-filter-repo
+      - name: Rewrite commit history to use shared-hackathon account
+        working-directory: compBioHelpers
+        run: |
+          git filter-repo --force --commit-callback '
+            commit.author_name = b"shared-hackathon"
+            commit.author_email = b"sharedhackathon@gmail.com"
+            commit.committer_name = b"shared-hackathon"
+            commit.committer_email = b"sharedhackathon@gmail.com"
+          '
+
+      # Step 4: Push mirrored branch to new repository
+      - name: Push mirrored branch to new repository
+        working-directory: compBioHelpers
+        run: |
+          git push mirror --all --force
+          git push mirror --tags --force
