@@ -1,6 +1,6 @@
 # Computational Biology Helpers
 
-Visit the deployed website: [Comp Biology Helpers](https://comp-bio-helpers.vercel.app/)
+Visit the deployed website: <a href="https://comp-bio-helpers.vercel.app/" target="_blank">Comp Bio Helpers</a>
 
 To install the node modules, run this command in your terminal:
 ```bash
