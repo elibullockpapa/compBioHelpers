@@ -1,6 +1,8 @@
 # Computational Biology Helpers
 
-Visit the deployed website: <a href="https://comp-bio-helpers.vercel.app/" target="_blank" rel="noopener noreferrer">Comp Bio Helpers</a>
+# Computational Biology Helpers
+
+Visit the deployed website: [Comp Bio Helpers](https://comp-bio-helpers.vercel.app/)
 
 The application is developed using the following technologies:
 
