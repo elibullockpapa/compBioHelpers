@@ -3,7 +3,9 @@
 Visit the deployed website: <a href="https://comp-bio-helpers.vercel.app/" target="_blank" rel="noopener noreferrer">Comp Bio Helpers</a>
 
 The application is developed using the following technologies:
+
 Frontend: React and Next.js
+
 3D Visualization: Three.js
 
 
