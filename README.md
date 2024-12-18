@@ -1,31 +1,26 @@
 # Computational Biology Helpers
 
-# Computational Biology Helpers
+## Team Members
+- **Eli B. Author** (elibp13@vt.edu)
+- **Ryan Z. Author** (ryanz22@vt.edu)
+- **Kishitij K. Author** (kishitijk@vt.edu)
+- **Connor B. Author** (cbrodish03@vt.edu)
 
-Visit the deployed website: [Comp Bio Helpers](https://comp-bio-helpers.vercel.app/)
+---
 
-The application is developed using the following technologies:
+## Project Description
+**Computational Biology Helpers** is a highly interactive web application designed to make computational biology tools accessible to both beginners and experts. The platform features advanced visualizations, including 2D and 3D sequence alignments, powered by robust algorithms such as BLOSUM (Block Substitution Matrices). Users can edit, save, and share algorithm inputs and outputs for convenience. Our tool bridges the gap between software engineers and computational biology by emphasizing usability, scalability, and performance.
 
-Frontend: React and Next.js
+Key features include:
+- 3D visualizations using **Three.js**.
+- Type-safe coding with **TypeScript**.
+- Seamless CI/CD deployment through **Vercel** and **GitHub workflows**.
+- Clean, intuitive interface with light/dark mode support.
 
-3D Visualization: Three.js
+---
 
+## Deployment
+The application is live and hosted on Vercel. Updates are automatically deployed within minutes of being pushed to the main branch.
 
-
-
-To install the node modules, run this command in your terminal:
-```bash
-npm install
-```
-To run in dev mode, run this command in your terminal:
-```bash
-npm run dev
-```
-To create a docker image, run this command in your terminal:
-```bash
-docker build -t "name of your image" .
-```
-To run the docker container, run this command in your terminal:
-```bash
-docker run -p "port":3000 "name of your image"
-```
+### Access the Live Demo:
+[**Computational Biology Helpers**](https://comp-bio-helpers.vercel.app/)
